@@ -11,7 +11,7 @@ class CurPairs(Base):
 	__tablename__ = "CurPairs"
 	
 	id        = Column(Integer, primary_key=True, index=True)
-	cur_pair = Column(String, unique=True, index=True)
+	cur_pair  = Column(String, unique=True, index=True)
 	
 
 class EURUSD(Base):
@@ -33,8 +33,8 @@ class Stocks(Base):
 	
 	__tablename__ = "Stocks"
 	
-	id        = Column(Integer, primary_key=True, index=True)
-	stock = Column(String, unique=True, index=True)
+	id    = Column(Integer, primary_key=True, index=True)
+	symbol = Column(String, unique=True, index=True)
 	
 	
 class GOOGL(Base):

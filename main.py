@@ -88,16 +88,16 @@ async def add_currency_pairs(cur_pair_req: CurPairRequest,  background_tasks: Ba
 	"""
 	adds given currecy pair TABLEs to db
 	"""
-	
-	curpair = models.CurPairs()
-	curpair.cur_pair = cur_pair_req.cur_pair
-	db.add(cur_pair)
-	db.commit(cur_pair)
-	
+		
+	curPair = models.CurPairs()
+	curPair.cur_pair = cur_pair_req.cur_pair
+	db.add(curPair)
+	db.commit()
+		
 	# in correct place
-	background_tasks.add_task(fetch_real_time, cur_pair.id) 
+	background_tasks.add_task(fetch_real_time, curPair.id)
 	
-	return None
+	return {"status": "ok"}
 	
 	
 @app.delete("/api/curencypair")
@@ -110,15 +110,17 @@ def remove_currency_pair(cur_pair_req: CurPairRequest, db: Session = Depends(get
 
 
 @app.post("/api/stock")
-async def add_stock(stock_req: StockRequest, db: Session = Depends(get_db)):
+async def add_stock(stock_req: StockRequest, background_tasks: BackgroundTasks,db: Session = Depends(get_db)):
 	"""
 	adds given stock to db
 	"""
 	
 	stock = models.Stocks()
+	print(stock_req.symbol)
 	stock.symbol = stock_req.symbol
 	db.add(stock)
-	db.commit(stock)
+	db.commit()
+		
 	
 	background_tasks.add_task(fetch_real_time, stock.id) 
 	
