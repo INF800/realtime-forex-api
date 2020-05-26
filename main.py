@@ -157,6 +157,29 @@ async def start_fetching(cur_pair_req: CurPairRequest,  background_tasks: Backgr
 
 
 
+
+@app.get("/api/history/{pair}")
+def generate_history(pair: str, db: Session = Depends(get_db)):
+	"""
+	expected input format: "eurusd"
+	
+	Note: we provide history only since time you click `Start Live Feed`
+	and not stop it using `Stop Live Feed`.
+	I dont have live server and big storage :(
+	"""
+	
+	l_pair, r_pair = pair.upper()[:3], pair.upper()[3:]
+	pair = l_pair + "/" + r_pair
+	# get hist
+	cur_pair_hist = db.query(CurPairs).filter(CurPairs.cur_pair==pair).all()
+	
+	context = {
+		"cur_pair_hist": cur_pair_hist
+	}
+	
+	return context #returned as json
+
+
 # ----------------------------------------
 # end
 # ----------------------------------------

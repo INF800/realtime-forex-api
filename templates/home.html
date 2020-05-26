@@ -14,9 +14,8 @@
 		<input type="button" value="Stop Live Feed" onclick="stopFetchStore()">
 	</div> <br /> <br />
 	
-	
 	<script>
-		// fetches realtime data and updates the db with the info
+		// STARTS fetching realtime data and updating the db with the info
 		function startFetchStore(){
 			axios
 			.post('/api/currencypairs',{
@@ -71,14 +70,17 @@
 	</table>
 	</div>
 	
+	<br/>
 	<div>
-		<!-- history table api -->
-		<!-- use .filter eurusd -->
+		<p>
+			<b>Note:</b> Get history for any pair<br />
+			through <code>/api/history/eurusd</code> or <code>/api/history/xxxyyy</code></p>
 	</div>
 	
 	<div>
 		<!-- chart realtime -->
 	</div>
+	
 </section>
 
 <br/>
