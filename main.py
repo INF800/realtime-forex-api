@@ -26,7 +26,7 @@ models.Base.metadata.create_all(bind=engine) #creates tables
 # ----------------------------------------
 # import custom modules
 # ----------------------------------------
-from scraper import StockScraper, CurPairScraper
+from scraper import CurPairScraper
 
 
 # ----------------------------------------
@@ -49,8 +49,25 @@ def get_db():
 # ----------------------------------------
 from fastapi import BackgroundTasks
 
-def fetch_real_time(pk: int):
-	pass
+collect = True
+def fetch_real_time():
+	
+	db = SessionLocal()
+	
+	global collect
+	while (collect):
+		
+		all_pairs_scraper = CurPairScraper("https://finance.yahoo.com/currencies")
+		
+		for pair_info in all_pairs_scraper.obj_genrator():
+			print("{} of {} : {}".format(pair_info["row_num"], pair_info["total_rows"], pair_info["name"]))
+			curPair            = models.CurPairs()
+			curPair.cur_pair   = pair_info["name"]
+			curPair.price      = pair_info["price"]
+			curPair.change     = pair_info["change"]
+			curPair.per_change = pair_info["per_change"]
+			db.add(curPair)
+		db.commit()
 
 
 # ----------------------------------------
@@ -58,12 +75,9 @@ def fetch_real_time(pk: int):
 # ----------------------------------------
 from fastapi import Request # for get
 from pydantic import BaseModel # for post
-
-class StockRequest(BaseModel):
-	symbol: str
 	
 class CurPairRequest(BaseModel):
-	cur_pair: str
+	status: str
 
 
 # ----------------------------------------
@@ -83,12 +97,19 @@ def api_home(request: Request):
 	return templates.TemplateResponse("home.html", context)
 
 
-@app.post("/api/curencypair")
-async def add_currency_pairs(cur_pair_req: CurPairRequest,  background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+@app.post("/api/curencypairs")
+async def start_fetching(cur_pair_req: CurPairRequest,  background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
 	"""
 	adds given currecy pair TABLEs to db
 	"""
-		
+	global collect
+	if cur_pair_req.status == "STOP":
+		collect = False
+	if cur_pair_req.status == "START":
+		collect = True
+		background_tasks.add_task(fetch_real_time)
+	
+	"""
 	curPair = models.CurPairs()
 	curPair.cur_pair = cur_pair_req.cur_pair
 	db.add(curPair)
@@ -96,44 +117,9 @@ async def add_currency_pairs(cur_pair_req: CurPairRequest,  background_tasks: Ba
 		
 	# in correct place
 	background_tasks.add_task(fetch_real_time, curPair.id)
+	"""
 	
 	return {"status": "ok"}
-	
-	
-@app.delete("/api/curencypair")
-def remove_currency_pair(cur_pair_req: CurPairRequest, db: Session = Depends(get_db)):
-	"""
-	Remove given curencypair TABLE from DB
-	"""
-	
-	return None
-
-
-@app.post("/api/stock")
-async def add_stock(stock_req: StockRequest, background_tasks: BackgroundTasks,db: Session = Depends(get_db)):
-	"""
-	adds given stock to db
-	"""
-	
-	stock = models.Stocks()
-	print(stock_req.symbol)
-	stock.symbol = stock_req.symbol
-	db.add(stock)
-	db.commit()
-		
-	
-	background_tasks.add_task(fetch_real_time, stock.id) 
-	
-	return None
-	
-
-@app.delete("/api/stock")
-def remove_stock(stock_req: StockRequest, db: Session = Depends(get_db)):
-	"""
-	deletes given stock table from db
-	"""
-	
-	return None
 
 
 

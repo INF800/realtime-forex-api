@@ -5,7 +5,7 @@ import pandas as pd
 import sys, time
 
 
-class curPairScraper():
+class CurPairScraper():
 	
 	def __init__(self, url):
 		self.names=[]
@@ -37,12 +37,12 @@ class curPairScraper():
 				for percentChange in listing.find_all('td', attrs={'data-reactid':i+7}):
 					self.percentChanges.append(percentChange.text)
 					
-		df = (pd.DataFrame({"names": self.names, "prices": self.prices, "changes": self.changes, "per_changes": self.percentChanges}))
+		all_cur_pairs = pd.DataFrame({"names": self.names, "prices": self.prices, "changes": self.changes, "per_changes": self.percentChanges})
 		self.names = []
 		self.prices = []
 		self.changes = []
 		self.percentChanges = []
-		return df
+		return all_cur_pairs
 	
 	
 	def obj_genrator(self):
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 	#usage:
 	=======
 	
-	scraper = curPairScraper("https://finance.yahoo.com/currencies")
+	scraper = CurPairScraper("https://finance.yahoo.com/currencies")
 	
 	while (True):
 		for pair_info in scraper.obj_genrator():
