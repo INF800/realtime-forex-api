@@ -16,6 +16,7 @@ templates = Jinja2Templates(directory="templates")
 # setup db
 # ----------------------------------------
 import models
+from models import CurPairs
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 models.Base.metadata.create_all(bind=engine) #creates tables
@@ -86,22 +87,55 @@ class CurPairRequest(BaseModel):
 # ----------------------------------------
 # ----------------------------------------
 @app.get("/")
-def api_home(request: Request):
+def api_home(request: Request, db: Session = Depends(get_db)):
 	"""
 	home page to display all real time values
 	"""
+	# try to get atleast only last 100 from db. Saves overhead; Note we use only last 26
+	cur_pairs = db.query(CurPairs).order_by(CurPairs.id.desc())
+	
+	realtime = {
+		"btcusd": cur_pairs.filter(CurPairs.cur_pair=="BTC/USD").first() ,
+		"ethusd": cur_pairs.filter(CurPairs.cur_pair=="ETH/USD").first() ,
+		"eurusd": cur_pairs.filter(CurPairs.cur_pair=="EUR/USD").first() ,
+		"usdjpy": cur_pairs.filter(CurPairs.cur_pair=="USD/JPY").first() ,
+		"gbpusd": cur_pairs.filter(CurPairs.cur_pair=="GBP/USD").first() ,
+		"audusd": cur_pairs.filter(CurPairs.cur_pair=="AUD/USD").first() ,
+		"nzdusd": cur_pairs.filter(CurPairs.cur_pair=="NZD/USD").first() ,
+		"eurjpy": cur_pairs.filter(CurPairs.cur_pair=="EUR/JPY").first() ,
+		"gbpjpy": cur_pairs.filter(CurPairs.cur_pair=="GBP/JPY").first() ,
+		"eurgbp": cur_pairs.filter(CurPairs.cur_pair=="EUR/GBP").first(),
+		"eurcad":	cur_pairs.filter(CurPairs.cur_pair=="EUR/CAD").first(),
+		"eursek": cur_pairs.filter(CurPairs.cur_pair=="EUR/SEK").first(),
+		"eurchf": cur_pairs.filter(CurPairs.cur_pair=="EUR/CHF").first(),
+		"eurhuf": cur_pairs.filter(CurPairs.cur_pair=="EUR/HUF").first(),
+		"eurjpy": cur_pairs.filter(CurPairs.cur_pair=="EUR/JPY").first(),
+		"usdcny": cur_pairs.filter(CurPairs.cur_pair=="USD/CNY").first(),
+		"usdhkd": cur_pairs.filter(CurPairs.cur_pair=="USD/HKD").first(),
+		"usdsgd": cur_pairs.filter(CurPairs.cur_pair=="USD/SGD").first(),
+		"usdinr": cur_pairs.filter(CurPairs.cur_pair=="USD/INR").first(),
+		"usdmxn": cur_pairs.filter(CurPairs.cur_pair=="USD/MXN").first(),
+		"usdphp": cur_pairs.filter(CurPairs.cur_pair=="USD/PHP").first(),
+		"usdidr": cur_pairs.filter(CurPairs.cur_pair=="USDIDR").first(),
+		"usdthb": cur_pairs.filter(CurPairs.cur_pair=="USD/THB").first(),
+		"usdmyr": cur_pairs.filter(CurPairs.cur_pair=="USD/MYR").first(),
+		"usdzar": cur_pairs.filter(CurPairs.cur_pair=="USD/ZAR").first(),
+		"usdrub": cur_pairs.filter(CurPairs.cur_pair=="USD/RUB").first(),
+	}
 	
 	context = {
-		"request": request
+		"request": request,
+		"realtime": realtime
 	}
 	return templates.TemplateResponse("home.html", context)
 
 
-@app.post("/api/curencypairs")
+@app.post("/api/currencypairs")
 async def start_fetching(cur_pair_req: CurPairRequest,  background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
 	"""
-	adds given currecy pair TABLEs to db
+	Starts/stops collecting realtime data and stores in db.
 	"""
+	
 	global collect
 	if cur_pair_req.status == "STOP":
 		collect = False

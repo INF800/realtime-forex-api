@@ -9,18 +9,87 @@
 	</div>
 	
 	<div>
-		<!-- add / delete -->
+		<!-- start / stop -->
+		<input type="button" value="Start Live Feed" onclick="startFetchStore()">
+		<input type="button" value="Stop Live Feed" onclick="stopFetchStore()">
+	</div> <br /> <br />
+	
+	
+	<script>
+		// fetches realtime data and updates the db with the info
+		function startFetchStore(){
+			axios
+			.post('/api/currencypairs',{
+				status: "START"
+			})
+			.then(function(response){
+				// console.log(response)
+			})
+		}
+		
+	
+		// refresh page every 5 secs
+		setTimeout(function() {
+  	location.reload();
+		}, 2000);
+	
+		
+		// STOPS FETCHING realtime data and updating the db with the info
+		function stopFetchStore(){
+			axios
+			.post('/api/currencypairs',{
+				status: "STOP"
+			})
+			.then(function(response){
+				// console.log(response)
+			})
+		}
+	</script>
+	
+	
+	<div>
+		<!-- table with all cur-pair & live details -->
+		<table>
+			<thead>
+				<tr>
+					<th>Pair</th>
+					<th>Price</th>
+					<th>Change</th>
+					<th>% Change</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for _, pair in realtime.items() %}
+			<tr>
+				<td><b> {{ pair.cur_pair }} </b></td>
+				<td> {{ pair.price }} </td>
+				<td> {{ pair.change }} </td>
+				<td> {{ pair.per_change }} </td>
+			</tr>
+			{% endfor %}
+			</tbody>
+	</table>
 	</div>
 	
 	<div>
-		<!-- table with cur-pair & live details -->
+		<!-- history table api -->
+		<!-- use .filter eurusd -->
+	</div>
+	
+	<div>
+		<!-- chart realtime -->
 	</div>
 </section>
 
-
+<br/>
+<br/>
+<br/>
 <section>
 	<div>
-		<h3>Stock Market</h3>
+		<!--h3>Stock Market Live</h3-->
+		<b>Stocks live coming soon ♥️</b> <br />
+		<i>This is helper API for Forex and Stock market prediction <br />
+		model powered by Reinforcement Learning</i>
 	</div>
 	
 	<div>
